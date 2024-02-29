@@ -1,6 +1,6 @@
-﻿FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
-WORKDIR /app
-EXPOSE 5002
+﻿FROM httpd AS base
+WORKDIR /usr/local/apache2/htdocs
+EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
@@ -14,6 +14,5 @@ FROM build AS publish
 RUN dotnet publish "MagicNumber.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
-WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet","MagicNumber.dll"]
+WORKDIR /usr/local/apache2/htdocs
+COPY --from=publish /app/publish/wwwroot .
