@@ -1,0 +1,101 @@
+﻿@page "/pendu"
+@inject HttpClient Http
+
+<PageTitle>Jouer au jeu du Pendu</PageTitle>
+
+<h1>Jeu du Pendu</h1>
+<h3>Devinez le mot avant votre fin</h3>
+
+@if (!gameOver)
+{
+    <p>Mot à deviner : @DisplayWordToGuess()</p>
+    <p>Lettres utilisées : @DisplayUsedLetters()</p>
+    <input type="text" @bind="userGuess" />
+    <button @onclick="CheckGuess">Soumettre</button>
+    <p>Essais restants : @remainingAttempts</p>
+}
+else
+{
+    <p>Résultat : @resultMessage</p>
+    <button @onclick="StartNewGame">Recommencer</button>
+}
+
+@code {
+    private string? wordToGuess;
+    private string? displayedWord;
+    private string usedLetters = "";
+    private int remainingAttempts = 6;
+    private bool gameOver = false;
+    private string resultMessage = "";
+    private string userGuess = "";
+
+    protected override void OnInitialized()
+    {
+        StartNewGame();
+    }
+
+    private void StartNewGame()
+    {
+        string[] words = { "canard", "bisou", "licorne", "enveloppe", "saltimbanque" };
+        Random random = new Random();
+        wordToGuess = words[random.Next(words.Length)];
+        displayedWord = new string('_', wordToGuess.Length);
+        usedLetters = "";
+        remainingAttempts = 6;
+        gameOver = false;
+        resultMessage = "";
+        userGuess = "";
+    }
+
+    private void CheckGuess()
+    {
+        if (string.IsNullOrEmpty(userGuess) || usedLetters.Contains(userGuess) || gameOver)
+        {
+            return;
+        }
+
+        usedLetters += userGuess;
+
+        if (wordToGuess.Contains(userGuess))
+        {
+            UpdateDisplayedWord();
+        }
+        else
+        {
+            remainingAttempts--;
+
+            if (remainingAttempts == 0)
+            {
+                resultMessage = $"Désolé, vous avez épuisé tous vos essais. Le mot était '{wordToGuess}'. Vous avez perdu.";
+                gameOver = true;
+            }
+        }
+
+        if (displayedWord == wordToGuess)
+        {
+            resultMessage = "Félicitations ! Vous avez deviné le mot correctement.";
+            gameOver = true;
+        }
+    }
+
+    private void UpdateDisplayedWord()
+    {
+        for (int i = 0; i < wordToGuess.Length; i++)
+        {
+            if (wordToGuess[i] == userGuess[0])
+            {
+                displayedWord = displayedWord.Substring(0, i) + userGuess + displayedWord.Substring(i + 1);
+            }
+        }
+    }
+
+    private string DisplayWordToGuess()
+    {
+        return displayedWord;
+    }
+
+    private string DisplayUsedLetters()
+    {
+        return usedLetters;
+    }
+}

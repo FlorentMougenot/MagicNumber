@@ -1,0 +1,179 @@
+﻿@page "/pizzeria"
+@using MagicNumber.Datas
+
+@using MagicNumber.Models;
+@using System.Collections.Generic
+
+<h1>Pizzeria</h1>
+
+<input type="checkbox" @bind="isAdminMode" id="adminToggle" />
+<label for="adminToggle">Mode Admin</label>
+
+<div class="grid-container">
+    <div class="pizza-list">
+        <h3>Liste des Pizzas</h3>
+
+        <div class="pizza-container">
+            @foreach (var pizza in InitialPizza.completePizzas)
+            {
+                <div class="pizza-card">
+                    <img src="@pizza.ImageLink" alt="@pizza.Name" class="pizza-image" />
+                    <h4 class="pizza-name">@pizza.Name</h4>
+                    <p class="pizza-price">Prix: <span>@pizza.Price</span> €</p>
+                    <div class="pizza-ingredients">
+                        <p>Ingrédients :</p>
+                        <ul>
+                            @foreach (var ingredient in pizza.Ingredients)
+                            {
+                                <li>@ingredient.Name</li>
+                            }
+                        </ul>
+                    </div>
+
+                    <!-- Affichage du bouton Supprimer seulement en mode admin -->
+                    @if (isAdminMode)
+                    {
+                        <button @onclick="()=> DeletePizza(pizza)">Supprimer</button>
+                    }
+                    else
+                    {
+                        <!-- Affichage du bouton Ajouter au Panier uniquement en mode utilisateur -->
+                        <button @onclick="()=> AddToCart(pizza)">Ajouter au Panier</button>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="cart-summary">
+        <h3>Résumé du Panier</h3>
+        <ul>
+            @foreach (var pizza in InitialPizza.completePizzas.Where(p => p.QuantityInCart > 0))
+            {
+                <li class="cart-item">@pizza.Name - Quantité: @pizza.QuantityInCart</li>
+            }
+        </ul>
+        <p class="total">Total: @CalculateTotal() €</p>
+    </div>
+</div>
+
+@code {
+
+    bool isAdminMode = false;
+
+    void AddToCart(Pizza pizza)
+    {
+        pizza.QuantityInCart++;
+        StateHasChanged();
+    }
+
+    decimal CalculateTotal()
+    {
+        return InitialPizza.completePizzas.Sum(p => p.Price * p.QuantityInCart);
+    }
+
+    // Méthode pour supprimer une pizza (à implémenter)
+    void DeletePizza(Pizza pizza)
+    {
+        InitialPizza.RemovePizza(pizza.Id);
+        StateHasChanged(); // Rafraîchir la vue après la suppression
+    }
+}
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background-image: url('/images/pizzeria.jpg');
+        background-size: cover;
+        background-position: center;
+        font-family: Arial, sans-serif;
+    }
+
+    .grid-container {
+        display: grid;
+        grid-template-columns: 3fr 1fr;
+        gap: 20px;
+        padding: 20px;
+        color: #fff;
+    }
+
+    .pizza-list {
+        order: 2;
+    }
+
+    .pizza-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .pizza-card {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: center;
+        background-color: rgba(255, 255, 255, 0.8);
+    }
+
+    .pizza-name {
+        color: #008000;
+    }
+
+    .pizza-price {
+        color: #008000;
+    }
+
+    .pizza-ingredients {
+        margin-top: 10px;
+    }
+
+        .pizza-ingredients p {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .pizza-ingredients ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .pizza-ingredients li {
+            color: #008000;
+        }
+
+    .pizza-image {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .cart-summary {
+        order: 1;
+        position: fixed;
+        top: 0;
+        right: 0;
+        background-color: #000000;
+        padding: 10px;
+    }
+
+    .cart-item {
+        color: #008000;
+    }
+
+    .total {
+        color: #008000;
+    }
+
+    /* Style pour la case à cocher et son label */
+    input[type="checkbox"] {
+        display: none; /* Cacher la case à cocher par défaut */
+    }
+
+    label[for="adminToggle"] {
+        background-color: #008000;
+        color: #fff;
+        padding: 5px 10px;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+</style>

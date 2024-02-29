@@ -1,0 +1,81 @@
+﻿@page "/nombremagique"
+@inject HttpClient Http
+
+<PageTitle>Jouer au Nombre Magique</PageTitle>
+
+<h1>Nombre magique</h1>
+<h3>Devinez le nombre entier compris entre 1 et 20</h3>
+
+
+@if (!gameOver)
+{
+    <input type="number" @bind="userGuess" />
+    <button @onclick="CheckGuess">Soumettre</button>
+    <p>@message</p>
+    <p>Essais restants : @DisplayHearts()</p>
+}
+else
+{
+    <p>@resultMessage</p>
+    <button @onclick="StartNewGame">Recommencer</button>
+}
+
+@code {
+    private int magicNumber;
+    private int userGuess;
+    private int remainingAttempts = 5;
+    private string message = "";
+    private bool gameOver = false;
+    private string resultMessage = "";
+
+    protected override void OnInitialized()
+    {
+        StartNewGame();
+    }
+
+    private void StartNewGame()
+    {
+        Random random = new Random();
+        magicNumber = random.Next(1, 21);
+        remainingAttempts = 5;
+        gameOver = false;
+        message = "";
+        resultMessage = "";
+        userGuess = 0;
+    }
+
+    private void CheckGuess()
+    {
+        if (userGuess == magicNumber)
+        {
+            resultMessage = "Félicitations ! Vous avez gagné en " + (5 - remainingAttempts + 1) + " essais.";
+            gameOver = true;
+        }
+        else
+        {
+            remainingAttempts--;
+
+            if (remainingAttempts > 0)
+            {
+                message = userGuess < magicNumber ? "Trop bas. Essayez à nouveau." : "Trop haut. Essayez à nouveau.";
+            }
+            else
+            {
+                resultMessage = "Désolé, vous avez épuisé tous vos essais. Le nombre magique était " + magicNumber + ". Vous avez perdu.";
+                gameOver = true;
+            }
+        }
+    }
+
+    private string DisplayHearts()
+    {
+        string hearts = "";
+
+        for (int i = 0; i < remainingAttempts; i++)
+        {
+            hearts += "❤️ ";
+        }
+
+        return hearts;
+    }
+}
